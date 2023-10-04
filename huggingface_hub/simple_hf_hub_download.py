@@ -27,11 +27,15 @@ def hf_hub_download(
 
     meta_resp = requests.head(url, headers=meta_headers)
     
+    # lfs 文件是 X-Linked-ETag, X-Linked-Size, Location
+    etag = meta_resp.headers.get("X-Linked-ETag") or meta_resp.headers.get("ETag")
+    size = meta_resp.headers.get("X-Linked-Size") or meta_resp.headers.get("Content-Length")
+    location = meta_resp.headers.get("Location") or meta_resp.request.url
     metadata = {
         "commit_hash": meta_resp.headers["X-Repo-Commit"],
-        "etag": meta_resp.headers["X-Linked-ETag"],
-        "size": meta_resp.headers["X-Linked-Size"],
-        "location": meta_resp.headers["Location"],
+        "etag": etag,
+        "size": size,
+        "location": location,
     }
 
     expected_size = int(metadata["size"])
@@ -105,6 +109,7 @@ def hf_hub_download(
     abs_dst = os.path.abspath(os.path.expanduser(dst))
     relative_src = os.path.relpath(abs_src, os.path.dirname(abs_dst))
     os.symlink(relative_src, abs_dst)
+    return pointer_path
 
 if __name__ == "__main__":
     os.environ['HTTP_PROXY'] = "http://172.18.48.1:7890"
@@ -114,13 +119,13 @@ if __name__ == "__main__":
     repo_type = "model"
     # 可以使用如下命令创建一个大小为 50M 的文件, 提前用 upload_file 上传
     # fallocate -l 52428800 test.bin
-    filename = "test.bin"
+    filename = ".gitattributes"  # "test.bin"
     revision = "main"
     repo_id = "Buxian/test-model"
     resume_download = True
     cache_dir = "./hf_cache_test"
     token = "hf_xyzz"
-    hf_hub_download(
+    pointer_path = hf_hub_download(
         repo_id=repo_id,
         filename=filename,
         revision=revision,
@@ -130,3 +135,19 @@ if __name__ == "__main__":
         cache_dir=cache_dir,
         resume_download=resume_download
     )
+    
+    # 以下验证仅使用于非 lfs 文件
+    blob_path = os.path.realpath(pointer_path)
+    print("pointer_path:", pointer_path)
+    print("blob_path:", blob_path)
+    import hashlib
+    import os
+    blob_id = os.path.basename(blob_path)  # a6344aac8c09253b3b630fb776ae94478aa0275b
+    filename = pointer_path                # f"hf_cache_test/models--Buxian--test-model/blobs/{blob_id}"
+    # 这里的计算方法即为 git 计算 blob id 的算法
+    size = os.stat(filename).st_size
+    prefix = f"blob {size}\0".encode()
+    with open(filename, "rb") as fr:
+        content = fr.read()
+    check_blob_id = hashlib.sha1(prefix + content).hexdigest()
+    assert check_blob_id == blob_id
