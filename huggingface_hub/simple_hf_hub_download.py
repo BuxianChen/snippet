@@ -111,6 +111,37 @@ def hf_hub_download(
     os.symlink(relative_src, abs_dst)
     return pointer_path
 
+# 注意huggingface_hub的实现中不会验证这个
+def check_download(pointer_path):
+    import hashlib
+    import os
+
+    blob_path = os.path.realpath(pointer_path)
+    blob_id = os.path.basename(blob_path)  # a6344aac8c09253b3b630fb776ae94478aa0275b
+
+    print("pointer_path:", pointer_path)
+    print("blob_path:", blob_path)
+    
+    if len(blob_id) == 40:
+        print("check regular blob file")   # 普通文件, blob_id 为 40 位, 使用 git 计算 blob id 的方法进行验证
+        filename = pointer_path            # f"hf_cache_test/models--Buxian--test-model/blobs/{blob_id}"
+        # 这里的计算方法即为 git 计算 blob id 的算法
+        size = os.stat(filename).st_size
+        prefix = f"blob {size}\0".encode()
+        with open(filename, "rb") as fr:
+            content = fr.read()
+        check_blob_id = hashlib.sha1(prefix + content).hexdigest()
+        assert check_blob_id == blob_id
+    else:  #  len(blob_id) == 64
+        print("check lfs file")            # lfs 文件, blob_id 为 64 位, 直接对文件本身使用 sha256 进行验证
+        filename = pointer_path
+        with open(filename, "rb") as fr:
+            content = fr.read()
+        check_lfs_id = hashlib.sha256(content).hexdigest()
+        assert check_lfs_id == blob_id
+
+
+
 if __name__ == "__main__":
     os.environ['HTTP_PROXY'] = "http://172.18.48.1:7890"
     os.environ['HTTPS_PROXY'] = "http://172.18.48.1:7890"
@@ -136,18 +167,5 @@ if __name__ == "__main__":
         resume_download=resume_download
     )
     
-    # 以下验证仅使用于非 lfs 文件
-    blob_path = os.path.realpath(pointer_path)
-    print("pointer_path:", pointer_path)
-    print("blob_path:", blob_path)
-    import hashlib
-    import os
-    blob_id = os.path.basename(blob_path)  # a6344aac8c09253b3b630fb776ae94478aa0275b
-    filename = pointer_path                # f"hf_cache_test/models--Buxian--test-model/blobs/{blob_id}"
-    # 这里的计算方法即为 git 计算 blob id 的算法
-    size = os.stat(filename).st_size
-    prefix = f"blob {size}\0".encode()
-    with open(filename, "rb") as fr:
-        content = fr.read()
-    check_blob_id = hashlib.sha1(prefix + content).hexdigest()
-    assert check_blob_id == blob_id
+    check_download(pointer_path)
+    
