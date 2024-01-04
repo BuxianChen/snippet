@@ -15,11 +15,88 @@ def get_example_model():
     )
     return m
 
+# 获取 layer 的完整名称
 def get_full_name(layer):
     class_name = type(layer).__name__
     module_name = type(layer).__module__
     full_name = module_name + '.' + class_name
     return full_name
+
+# 判断是否有 hook
+def has_hook(layer):
+    from torch.ao.quantization.quantize import _observer_forward_hook
+    from torch.ao.quantization.observer import ObserverBase
+    from torch.ao.quantization.fake_quantize import FakeQuantizeBase
+    from torch.ao.quantization.stubs import QuantStub, DeQuantStub
+
+    """
+        static quantization:
+            在 prepare 之后, 对于一个layer, 如果它需要被量化或是 QuantStub 层, 那么它包含以下属性
+                'activation_post_process': ObserverBase, 被注册为 layer 的 forward_hook, 用于观测 layer 层输出的取值范围
+            如果 layer 是 DeQuantStub, 那么它什么都不包含
+            如果 layer 无需量化, 则整个过程保持为普通的 float32 形式的 nn.Module
+        qat:
+            在 prepare_qat 之后, 对于一个layer, 如果它需要被量化, 那么它包含如下属性
+                'weight_fake_quant': FakeQuantizeBase,   # 在 layer 的 forward 函数中被调用, 用于对权重的量化与反量化
+                'weight_fake_quant.activation_post_process': ObserverBase,  # 在 layer.weight_fake_quant 的 forward 函数中被调用, 用于观测权重的取值范围
+                'activation_post_process': FakeQuantizeBase,  # 被注册为 layer 的 forward_hook, 用于对 layer 层输出进行量化与反量化
+                'activation_post_process.activation_post_process': ObserverBase  # 在 layer.activation_post_process 的 forward 函数中被调用, 用于观测 layer 层输出的取值范围
+            而如果 layer 是 QuantStub, 那么它只包含 activation_post_process 和 activation_post_process.activation_post_process
+            如果 layer 是 DeQuantStub, 那么它什么都不包含
+            如果 layer 无需量化, 则整个过程保持为普通的 float32 形式的 nn.Module
+    """
+
+    hook_names = [
+        "_backward_pre_hooks", "_backward_hooks",
+        "_forward_hooks", "_forward_hooks_with_kwargs",
+        "_forward_hooks_always_called",
+        "_forward_pre_hooks", "_forward_pre_hooks_with_kwargs",
+    ]
+
+    hook_dict = {hook_name: getattr(layer, hook_name) for hook_name in hook_names if getattr(layer, hook_name)}
+    if hook_dict:
+        # 确保只有一个 _forward_hook (注意这种hook是在forward之后被调用的) 且 hook 为 _observer_forward_hook 且相应的 layer 包含 activation_post_process
+        assert (
+            len(hook_dict) == 1 and "_forward_hooks" in hook_dict
+            and len(hook_dict["_forward_hooks"]) == 1
+            and list(hook_dict["_forward_hooks"].values())[0] is _observer_forward_hook
+            and hasattr(layer, "activation_post_process")
+        )
+
+        # static quantization: activation_post_process 是 ObserverBase
+        if isinstance(layer.activation_post_process, ObserverBase):
+            return "static"
+        # qat: activation_post_process 是 FakeQuantizeBase, 并且它的 forward 方法包含了对 observer 的调用, 而 activation_post_process 本身被注册为了 forward_hook
+        elif isinstance(layer.activation_post_process, FakeQuantizeBase):
+            assert (
+                hasattr(layer.activation_post_process, "activation_post_process")
+                and not has_hook(layer.activation_post_process)
+            )
+            if isinstance(layer, QuantStub):
+                assert not hasattr(layer, "weight_fake_quant")
+            else:
+                assert hasattr(layer, "weight_fake_quant") and not has_hook(layer.weight_fake_quant)
+            return "qat"
+        else:
+            raise ValueError("other case")
+    else:
+        return ""
+
+# 如果有 hook, 则在 layer 的 classname 前面加上 *
+def get_display_name(layer):
+    full_name = get_full_name(layer)
+    flag_mapping = {
+        "qat": "+",
+        "static": "*"
+    }
+    case = has_hook(layer)
+    if case:
+        full_name = flag_mapping[case]+full_name
+    return full_name
+
+# 展平带有 QuantStub 和 DeQuantStub 被 QuantWrapper 包裹的 module
+def flatten_submodule(m):
+    return [m.quant] + list(m.module) + [m.dequant]
 
 
 def dynamic_quantization_layer_change(origin_float32_model):
@@ -34,7 +111,7 @@ def dynamic_quantization_layer_change(origin_float32_model):
 
     column_names = ["origin_float32_model", "fused_float32_model", "dynamic_quantized_int8_model"]
     module_names = [
-        list(map(get_full_name, item))
+        list(map(get_display_name, item))
         for item in zip(origin_float32_model, fused_float32_model, dynamic_quantized_int8_model)
     ]
     modules = [
@@ -67,13 +144,10 @@ def static_quantization_layer_change(origin_float32_model):
     # 根据 observer 确定激活值的量化参数, 并量化模型本身的权重
     static_quantized_int8_model = torch.ao.quantization.convert(fused_float32_prepared_fp32_model)
 
-    def flatten_submodule(m):
-        return [m.quant] + list(m.module) + [m.dequant]
-
     column_names = ["origin_float32_model", "wrapped_float32_model", "fused_float32_model", "fused_float32_prepared_fp32_model", "static_quantized_int8_model"]
     
     module_names = [
-        list(map(get_full_name, item))
+        list(map(get_display_name, item))
         for item in zip(
             [torch.nn.Identity()] + list(origin_float32_model) + [torch.nn.Identity()],
             flatten_submodule(wrapped_float32_model),
@@ -120,13 +194,10 @@ def qat_layer_change(origin_float32_model):
     # 根据 observer 确定激活值的量化参数, 并量化模型本身的权重
     qat_static_quantized_int8_model = torch.ao.quantization.convert(fused_float32_prepared_fp32_model)
 
-    def flatten_submodule(m):
-        return [m.quant] + list(m.module) + [m.dequant]
-
     column_names = ["origin_float32_model", "wrapped_float32_model", "fused_float32_model", "fused_float32_prepared_fp32_model", "qat_static_quantized_int8_model"]
     
     module_names = [
-        list(map(get_full_name, item))
+        list(map(get_display_name, item))
         for item in zip(
             [torch.nn.Identity()] + list(origin_float32_model) + [torch.nn.Identity()],
             flatten_submodule(wrapped_float32_model),
