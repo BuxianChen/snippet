@@ -31,19 +31,21 @@ def has_hook(layer):
 
     """
         static quantization:
-            在 prepare 之后, 对于一个layer, 如果它需要被量化或是 QuantStub 层, 那么它包含以下属性
-                'activation_post_process': ObserverBase, 被注册为 layer 的 forward_hook, 用于观测 layer 层输出的取值范围
+            在 prepare 之后, 对于一个layer,
+            如果 layer 需要被量化或是 QuantStub 层, 那么它包含以下属性
+                activation_post_process: ObserverBase, 它被注册为 layer 的 forward_hook, 用于观测 layer 层输出的取值范围
             如果 layer 是 DeQuantStub, 那么它什么都不包含
-            如果 layer 无需量化, 则整个过程保持为普通的 float32 形式的 nn.Module
+            如果 layer 无需量化, 则全流程保持为普通的 float 形式的 nn.Module, 且不会追加任何 hook 或子模块
         qat:
-            在 prepare_qat 之后, 对于一个layer, 如果它需要被量化, 那么它包含如下属性
-                'weight_fake_quant': FakeQuantizeBase,   # 在 layer 的 forward 函数中被调用, 用于对权重的量化与反量化
-                'weight_fake_quant.activation_post_process': ObserverBase,  # 在 layer.weight_fake_quant 的 forward 函数中被调用, 用于观测权重的取值范围
-                'activation_post_process': FakeQuantizeBase,  # 被注册为 layer 的 forward_hook, 用于对 layer 层输出进行量化与反量化
-                'activation_post_process.activation_post_process': ObserverBase  # 在 layer.activation_post_process 的 forward 函数中被调用, 用于观测 layer 层输出的取值范围
-            而如果 layer 是 QuantStub, 那么它只包含 activation_post_process 和 activation_post_process.activation_post_process
+            在 prepare_qat 之后, 对于一个layer,
+            如果 layer 需要被量化, 那么它包含如下属性
+                weight_fake_quant: FakeQuantizeBase,   # 在 layer 的 forward 函数中被调用, 用于对权重的量化与反量化
+                weight_fake_quant.activation_post_process: ObserverBase,  # 在 layer.weight_fake_quant 的 forward 函数中被调用, 用于观测权重的取值范围
+                activation_post_process: FakeQuantizeBase,  # 被注册为 layer 的 forward_hook, 用于对 layer 层输出进行量化与反量化
+                activation_post_process.activation_post_process: ObserverBase  # 在 layer.activation_post_process 的 forward 函数中被调用, 用于观测 layer 层输出的取值范围
+            如果 layer 是 QuantStub, 那么它只包含 activation_post_process 和 activation_post_process.activation_post_process
             如果 layer 是 DeQuantStub, 那么它什么都不包含
-            如果 layer 无需量化, 则整个过程保持为普通的 float32 形式的 nn.Module
+            如果 layer 无需量化, 则全流程保持为普通的 float 形式的 nn.Module, 且不会追加任何 hook 或子模块
     """
 
     hook_names = [
