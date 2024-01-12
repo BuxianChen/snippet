@@ -1,0 +1,156 @@
+{
+    "vector_store": {
+        "default": {
+            "embedding_dict": {
+                "ef34824e-ae70-4a7e-a12d-a6092cdfe6ff": [0.002, -0.030, -0.024],
+                "9f6f9546-b19f-4abe-a82e-15b7ea261641": [-0.011, -0.043, -0.015]
+            },
+            "text_id_to_ref_doc_id": {
+                "ef34824e-ae70-4a7e-a12d-a6092cdfe6ff": "1452186b-1024-4294-869c-787e0b7f26d4",
+                "9f6f9546-b19f-4abe-a82e-15b7ea261641": "1452186b-1024-4294-869c-787e0b7f26d4"
+            },
+            "metadata_dict": {
+                "ef34824e-ae70-4a7e-a12d-a6092cdfe6ff": {
+                    "file_path": "txt_data/galaxy.txt",
+                    "_node_type": "TextNode",
+                    "document_id": "1452186b-1024-4294-869c-787e0b7f26d4",
+                    "doc_id": "1452186b-1024-4294-869c-787e0b7f26d4",
+                    "ref_doc_id": "1452186b-1024-4294-869c-787e0b7f26d4"
+                },
+                "9f6f9546-b19f-4abe-a82e-15b7ea261641": {
+                    "file_path": "txt_data/galaxy.txt",
+                    "_node_type": "TextNode",
+                    "document_id": "1452186b-1024-4294-869c-787e0b7f26d4",
+                    "doc_id": "1452186b-1024-4294-869c-787e0b7f26d4",
+                    "ref_doc_id": "1452186b-1024-4294-869c-787e0b7f26d4"
+                }
+            }
+        },
+        "image": {
+            "embedding_dict": {},
+            "text_id_to_ref_doc_id": {},
+            "metadata_dict": {}
+        }
+    },
+    "doc_store": {
+        "docstore/metadata": {
+            "1452186b-1024-4294-869c-787e0b7f26d4": {
+                "doc_hash": "f5c2f938a67d09e40240389b52e4bb679b054301b05c795a14a62f501e31b02f"
+            },
+            "ef34824e-ae70-4a7e-a12d-a6092cdfe6ff": {
+                "doc_hash": "7551c9255b089395e656bef1120af8df55316d0b15cb96dbad5e78046773959a",
+                "ref_doc_id": "1452186b-1024-4294-869c-787e0b7f26d4"
+            },
+            "9f6f9546-b19f-4abe-a82e-15b7ea261641": {
+                "doc_hash": "0d09857eaaaf3e8d84702a02d2ae553aefcdc581643f6cd4d70c84d7920ece48",
+                "ref_doc_id": "1452186b-1024-4294-869c-787e0b7f26d4"
+            }
+        },
+        "docstore/data": {
+            "ef34824e-ae70-4a7e-a12d-a6092cdfe6ff": {
+                "__data__": {
+                    "id_": "ef34824e-ae70-4a7e-a12d-a6092cdfe6ff",
+                    "embedding": null,
+                    "metadata": {
+                        "file_path": "txt_data/galaxy.txt"
+                    },
+                    "excluded_embed_metadata_keys": ["file_name"],
+                    "excluded_llm_metadata_keys": ["file_name"],
+                    "relationships": {
+                        "<NodeRelationship.SOURCE: 1>": {
+                            "node_id": "1452186b-1024-4294-869c-787e0b7f26d4",
+                            "node_type": "<ObjectType.DOCUMENT: 4>",
+                            "metadata": {
+                                "file_path": "txt_data/galaxy.txt"
+                            },
+                        "hash": "f5c2f938a67d09e40240389b52e4bb679b054301b05c795a14a62f501e31b02f",
+                        "class_name": "RelatedNodeInfo"
+                        },
+                        "<NodeRelationship.NEXT: 3>": {
+                            "node_id": "9f6f9546-b19f-4abe-a82e-15b7ea261641",
+                            "node_type": "ObjectType.TEXT: 1>",
+                            "metadata": {},
+                            "hash": "0d09857eaaaf3e8d84702a02d2ae553aefcdc581643f6cd4d70c84d7920ece48",
+                            "class_name": "RelatedNodeInfo"
+                        }
+                    },
+                    "hash": "7551c9255b089395e656bef1120af8df55316d0b15cb96dbad5e78046773959a",
+                    "text": "pragraph chunk 1 ...",
+                    "start_char_idx": 0,
+                    "end_char_idx": 4143,
+                    "text_template": "{metadata_str}\n\n{content}",
+                    "metadata_template": "{key}: {value}",
+                    "metadata_seperator": "\n",
+                    "class_name": "TextNode"
+                },
+                "__type__": "<ObjectType.TEXT: 1>"
+            },
+            "9f6f9546-b19f-4abe-a82e-15b7ea261641": {
+                "__data__": {
+                    "id_": "9f6f9546-b19f-4abe-a82e-15b7ea261641",
+                    "embedding": null,
+                    "metadata": {
+                        "file_path": "txt_data/galaxy.txt"
+                    },
+                    "excluded_embed_metadata_keys": ["file_name"],
+                "excluded_llm_metadata_keys": ["file_name"],
+                "relationships": {
+                    "<NodeRelationship.SOURCE: 1>": {
+                        "node_id": "1452186b-1024-4294-869c-787e0b7f26d4",
+                        "node_type": "ObjectType.DOCUMENT: 4",
+                        "metadata": {
+                            "file_path": "txt_data/galaxy.txt"
+                        },
+                        "hash": "f5c2f938a67d09e40240389b52e4bb679b054301b05c795a14a62f501e31b02f",
+                        "class_name": "RelatedNodeInfo"
+                    },
+                    "<NodeRelationship.PREVIOUS: 2>": {
+                        "node_id": "ef34824e-ae70-4a7e-a12d-a6092cdfe6ff",
+                        "node_type": "<ObjectType.TEXT: 1>",
+                        "metadata": {
+                            "file_path": "txt_data/galaxy.txt"
+                        },
+                        "hash": "7551c9255b089395e656bef1120af8df55316d0b15cb96dbad5e78046773959a",
+                        "class_name": "RelatedNodeInfo"
+                    }
+                },
+                "hash": "0d09857eaaaf3e8d84702a02d2ae553aefcdc581643f6cd4d70c84d7920ece48",
+                "text": "paragraph chunk 2 ...",
+                "start_char_idx": 3281,
+                "end_char_idx": 4491,
+                "text_template": "{metadata_str}\n\n{content}",
+                "metadata_template": "{key}: {value}",
+                "metadata_seperator": "\n",
+                "class_name": "TextNode"},
+                "__type__": "<ObjectType.TEXT: 1>"
+            }
+        },
+        "docstore/ref_doc_info": {
+            "1452186b-1024-4294-869c-787e0b7f26d4": {
+                "node_ids": ["ef34824e-ae70-4a7e-a12d-a6092cdfe6ff", "9f6f9546-b19f-4abe-a82e-15b7ea261641"],
+                "metadata": {
+                    "file_path": "txt_data/galaxy.txt"
+                }
+            }
+        }
+    },
+    "index_store": {
+        "index_store/data": {
+            "780e6ef7-f7be-4e5c-8284-b14efbed6f05": {
+                "__type__": "<IndexStructType.VECTOR_STORE: vector_store>",
+                "__data__": {
+                    "index_id": "780e6ef7-f7be-4e5c-8284-b14efbed6f05",
+                    "summary": null,
+                    "nodes_dict": {
+                        "ef34824e-ae70-4a7e-a12d-a6092cdfe6ff": "ef34824e-ae70-4a7e-a12d-a6092cdfe6ff", "9f6f9546-b19f-4abe-a82e-15b7ea261641": "9f6f9546-b19f-4abe-a82e-15b7ea261641"
+                    },
+                    "doc_id_dict": {},
+                    "embeddings_dict": {}
+                }
+            }
+        }
+    },
+    "graph_store": {
+        "graph_dict": {}
+    }
+}
