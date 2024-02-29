@@ -49,7 +49,7 @@ cd <your-project-name>
 ```
 node_modules/   # 依赖项的安装目录, Vue 是每个项目都把需要的包安装一遍, 执行 npm install 之后才有这个目录
 public/
-  - favicon.ico   # 一个 Vue 的 icon 图标
+  - favicon.ico   # 一个 Vue 的 icon 图标, 网页的标签页图标
 src/              # 代码
   - App.vue
   - main.js
@@ -82,4 +82,130 @@ vite.config.js   # 不确定是不是与项目相关, demo 项目似乎依赖 vi
 npm install     # 依赖包
 npm run dev     # 运行服务, 这时可以用浏览器访问
 npm run build   # 将 vue 代码编译为 javascript, css, html 代码, 放在 dist 目录下
+```
+
+# hello world
+
+执行 `npm create vue@latest` 后, 删除不必要的文件, 目录结构如下
+
+```
+src/
+  - assets/      # 空文件夹
+  - components/  # 空文件夹
+  - App.vue
+  - main.js
+index.html       # 使用默认生成的
+jsconfig.json    # 使用默认生成的
+package.json     # 使用默认生成的
+vite.config.js   # 使用默认生成的
+```
+
+`main.js` 内容
+
+```javascript
+import { createApp } from 'vue'
+import App from './App.vue'
+
+createApp(App).mount("#app")
+```
+
+`App.vue` 内容
+
+```vue
+<template>
+  <h1> title </h1>
+  <p>{{ content }}</p>
+</template>
+
+<script>
+export default {
+  data(){
+    return {content: "hello world"}
+  }
+}
+</script>
+```
+
+以下均为使用 `npm create vue@latest` 创建文件夹时生成的原始内容
+
+`index.html` 内容
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+```
+
+`jsconfig.json` 文件内容
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+`package.json` 文件内容
+
+```json
+{
+  "name": "vue_hello",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.15"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.3",
+    "vite": "^5.0.11"
+  }
+}
+```
+
+`vite.config.js` 文件内容
+
+```javascript
+import { fileURLToPath, URL } from 'node:url'
+
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [
+    vue(),
+  ],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  }
+})
+```
+
+此时可以使用如下命令安装依赖及运行
+
+```
+npm install     # 依赖包
+npm run dev     # 运行服务, 这时可以用浏览器访问
 ```
