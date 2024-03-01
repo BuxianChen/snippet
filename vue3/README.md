@@ -84,6 +84,25 @@ npm run dev     # 运行服务, 这时可以用浏览器访问
 npm run build   # 将 vue 代码编译为 javascript, css, html 代码, 放在 dist 目录下
 ```
 
+# npm & npx
+
+```bash
+npm install prettier
+# npm install -g <package-name>  # 全局安装, 不推荐
+```
+
+此命令会在当前文件夹下新建或更新 node_modules/prettier 文件夹, 创建或更新 package.json, package-lock.json 文件, 因此是局部安装, 自动创建的 `package.json` 文件内容如下:
+
+```json
+{
+  "dependencies": {
+    "prettier": "^3.2.5"
+  }
+}
+```
+
+ChatGPT (不确定真伪) : npx 是 npm 的一部分, npx 会临时安装并执行依赖项，然后在执行完成后将其删除
+
 # hello world
 
 执行 `npm create vue@latest` 后, 删除不必要的文件, 目录结构如下
