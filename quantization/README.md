@@ -1,5 +1,7 @@
 # torch.quantizaion
 
+`quant_manual.py` 为博客上的代码片段
+
 `quant_methods_compare.py` 用于可视化 torch 原生支持的 3 种量化模式: dynamic quantization, static quantization, QAT. 脚本会展示一个简单的模型在量化过程中各个子模块的变化情况. 运行环境为 `torch==2.1.0`
 
 ```python
