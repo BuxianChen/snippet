@@ -1,0 +1,26 @@
+services:
+  myenv_redis:
+    image: redis:latest
+    networks:
+      - myenv_network
+    restart: unless-stopped
+    command: ["redis-server", "--port", "${REDIS_PORT}"] 
+
+  myenv_app:
+    build:
+      context: ..  # 相对于docker-compose.yml的路径, 作为dockerfile的context路径
+      dockerfile: docker/app.dockerfile
+    environment:
+      - REDIS_URL=${REDIS_URL}
+      - REDIS_PORT=${REDIS_PORT}
+    depends_on:
+      - myenv_redis
+    ports:
+      - 8888:8888
+    networks:
+      - myenv_network
+
+networks:
+  myenv_network:
+    driver: bridge
+
